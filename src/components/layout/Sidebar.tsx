@@ -127,6 +127,7 @@ export default function Sidebar() {
           <div className="space-y-1">
             {boards.map((board) => {
               const isActive = pathname === `/board/${board.id}`;
+              const boardColor = board.color || "#D4A843";
               return (
                 <Link
                   key={board.id}
@@ -134,11 +135,17 @@ export default function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors",
                     isActive
-                      ? "bg-amber-50 text-amber-700 font-medium"
+                      ? "font-medium"
                       : "text-stone-600 hover:bg-stone-100 hover:text-stone-800"
                   )}
+                  style={isActive ? { backgroundColor: boardColor + "15", color: boardColor } : undefined}
                 >
-                  <Kanban className="w-5 h-5 flex-shrink-0" />
+                  <div
+                    className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: boardColor + "25" }}
+                  >
+                    <Kanban className="w-3 h-3" style={{ color: boardColor }} />
+                  </div>
                   <AnimatePresence>
                     {!collapsed && (
                       <motion.span

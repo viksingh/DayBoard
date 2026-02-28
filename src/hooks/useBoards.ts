@@ -8,15 +8,15 @@ export function useBoards() {
   const { boards, dispatch, getBoard } = useBoardContext();
 
   const addBoard = useCallback(
-    (title: string, description?: string) => {
-      dispatch({ type: "ADD_BOARD", title, description });
+    (title: string, description?: string, color?: string) => {
+      dispatch({ type: "ADD_BOARD", title, description, color });
     },
     [dispatch]
   );
 
   const updateBoard = useCallback(
-    (boardId: string, title: string, description: string) => {
-      dispatch({ type: "UPDATE_BOARD", boardId, title, description });
+    (boardId: string, title: string, description: string, color?: string) => {
+      dispatch({ type: "UPDATE_BOARD", boardId, title, description, color });
     },
     [dispatch]
   );

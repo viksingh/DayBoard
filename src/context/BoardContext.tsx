@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
-import { Board, Card, Column } from "@/types/board";
+import { Board, Card, Column, BOARD_COLORS } from "@/types/board";
 import { storageGet, storageSet } from "@/lib/storage";
 import { generateId } from "@/lib/ids";
 import { nowISO } from "@/lib/dates";
@@ -11,8 +11,8 @@ const STORAGE_KEY = "boards";
 // --- Actions ---
 type Action =
   | { type: "LOAD"; boards: Board[] }
-  | { type: "ADD_BOARD"; title: string; description?: string }
-  | { type: "UPDATE_BOARD"; boardId: string; title: string; description: string }
+  | { type: "ADD_BOARD"; title: string; description?: string; color?: string }
+  | { type: "UPDATE_BOARD"; boardId: string; title: string; description: string; color?: string }
   | { type: "DELETE_BOARD"; boardId: string }
   | { type: "ADD_COLUMN"; boardId: string; title: string; color?: string }
   | { type: "UPDATE_COLUMN"; boardId: string; columnId: string; title: string; color: string }
@@ -32,10 +32,12 @@ function boardReducer(state: Board[], action: Action): Board[] {
     case "ADD_BOARD": {
       const now = nowISO();
       const boardId = generateId();
+      const boardColor = action.color || BOARD_COLORS[state.length % BOARD_COLORS.length].color;
       const newBoard: Board = {
         id: boardId,
         title: action.title,
         description: action.description || "",
+        color: boardColor,
         columns: [
           { id: generateId(), boardId, title: "To Do", position: 0, color: "#3b82f6" },
           { id: generateId(), boardId, title: "In Progress", position: 1, color: "#f59e0b" },
@@ -51,7 +53,7 @@ function boardReducer(state: Board[], action: Action): Board[] {
     case "UPDATE_BOARD":
       return state.map((b) =>
         b.id === action.boardId
-          ? { ...b, title: action.title, description: action.description, updatedAt: nowISO() }
+          ? { ...b, title: action.title, description: action.description, ...(action.color ? { color: action.color } : {}), updatedAt: nowISO() }
           : b
       );
 

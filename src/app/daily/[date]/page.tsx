@@ -11,7 +11,7 @@ import { CalendarDays } from "lucide-react";
 export default function DailyDatePage() {
   const params = useParams();
   const router = useRouter();
-  const date = params.date as string;
+  const date = params?.date as string;
 
   if (!isValidDateKey(date)) {
     return (

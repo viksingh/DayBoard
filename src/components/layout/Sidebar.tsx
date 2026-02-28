@@ -17,7 +17,7 @@ import { useBoards } from "@/hooks/useBoards";
 import { useSettings } from "@/context/SettingsContext";
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
   const { boards, addBoard } = useBoards();
   const { settings, updateSettings } = useSettings();
   const collapsed = settings.sidebarCollapsed;

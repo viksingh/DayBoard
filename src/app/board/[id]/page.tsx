@@ -10,7 +10,7 @@ export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
   const { getBoard } = useBoards();
-  const boardId = params.id as string;
+  const boardId = params?.id as string;
   const board = getBoard(boardId);
 
   if (!board) {

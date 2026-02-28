@@ -1,11 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from "react";
 import { DailyNote, Mood } from "@/types/daily";
 import { storageGet, storageSet } from "@/lib/storage";
 import { nowISO } from "@/lib/dates";
+import { subscribeToDoc, writeDoc, isFirestoreConfigured } from "@/lib/firestore-sync";
 
 const STORAGE_KEY = "daily-notes";
+const FIRESTORE_DOC = "daily-notes";
 
 type DailyMap = Record<string, DailyNote>;
 
@@ -82,20 +84,51 @@ const DailyContext = createContext<DailyContextType | null>(null);
 
 export function DailyProvider({ children }: { children: React.ReactNode }) {
   const [notes, dispatch] = useReducer(dailyReducer, {});
-
-  useEffect(() => {
-    const saved = storageGet<DailyMap>(STORAGE_KEY, {});
-    dispatch({ type: "LOAD", notes: saved });
-  }, []);
-
   const [initialized, setInitialized] = React.useState(false);
+  const isRemoteUpdate = useRef(false);
+  const useFirestore = isFirestoreConfigured();
+
   useEffect(() => {
-    if (!initialized) {
+    if (useFirestore) {
+      const cached = storageGet<DailyMap>(STORAGE_KEY, {});
+      if (Object.keys(cached).length > 0) {
+        dispatch({ type: "LOAD", notes: cached });
+      }
+
+      const unsub = subscribeToDoc<DailyMap>(FIRESTORE_DOC, (data) => {
+        if (data) {
+          isRemoteUpdate.current = true;
+          dispatch({ type: "LOAD", notes: data });
+          storageSet(STORAGE_KEY, data);
+        }
+        if (!initialized) setInitialized(true);
+      });
+      const timeout = setTimeout(() => setInitialized(true), 1500);
+      return () => {
+        unsub();
+        clearTimeout(timeout);
+      };
+    } else {
+      const saved = storageGet<DailyMap>(STORAGE_KEY, {});
+      dispatch({ type: "LOAD", notes: saved });
       setInitialized(true);
+    }
+  }, [useFirestore]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!initialized) return;
+
+    if (isRemoteUpdate.current) {
+      isRemoteUpdate.current = false;
       return;
     }
+
     storageSet(STORAGE_KEY, notes);
-  }, [notes, initialized]);
+
+    if (useFirestore) {
+      writeDoc(FIRESTORE_DOC, notes);
+    }
+  }, [notes, initialized, useFirestore]);
 
   const getNote = useCallback(
     (date: string) => notes[date],

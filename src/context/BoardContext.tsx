@@ -1,12 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from "react";
 import { Board, Card, Column, BOARD_COLORS } from "@/types/board";
 import { storageGet, storageSet } from "@/lib/storage";
 import { generateId } from "@/lib/ids";
 import { nowISO } from "@/lib/dates";
+import { subscribeToDoc, writeDoc, isFirestoreConfigured } from "@/lib/firestore-sync";
 
 const STORAGE_KEY = "boards";
+const FIRESTORE_DOC = "boards";
 
 // --- Actions ---
 type Action =
@@ -160,7 +162,6 @@ function boardReducer(state: Board[], action: Action): Board[] {
         const card = b.cards.find((c) => c.id === action.cardId);
         if (!card) return b;
 
-        // Remove from old position, recalculate positions
         const otherCards = b.cards.filter((c) => c.id !== action.cardId);
         const targetColCards = otherCards
           .filter((c) => c.columnId === action.toColumnId)
@@ -195,22 +196,56 @@ const BoardContext = createContext<BoardContextType | null>(null);
 
 export function BoardProvider({ children }: { children: React.ReactNode }) {
   const [boards, dispatch] = useReducer(boardReducer, []);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = storageGet<Board[]>(STORAGE_KEY, []);
-    dispatch({ type: "LOAD", boards: saved });
-  }, []);
-
-  // Persist on every change (skip initial empty)
   const [initialized, setInitialized] = React.useState(false);
+  const isRemoteUpdate = useRef(false);
+  const useFirestore = isFirestoreConfigured();
+
+  // Load: prefer Firestore (real-time), fall back to localStorage
   useEffect(() => {
-    if (!initialized) {
+    if (useFirestore) {
+      // Load localStorage first for instant render, then Firestore takes over
+      const cached = storageGet<Board[]>(STORAGE_KEY, []);
+      if (cached.length > 0) {
+        dispatch({ type: "LOAD", boards: cached });
+      }
+
+      const unsub = subscribeToDoc<Board[]>(FIRESTORE_DOC, (data) => {
+        if (data) {
+          isRemoteUpdate.current = true;
+          dispatch({ type: "LOAD", boards: data });
+          storageSet(STORAGE_KEY, data); // cache locally
+        }
+        if (!initialized) setInitialized(true);
+      });
+      // Mark initialized even if Firestore hasn't responded yet
+      const timeout = setTimeout(() => setInitialized(true), 1500);
+      return () => {
+        unsub();
+        clearTimeout(timeout);
+      };
+    } else {
+      const saved = storageGet<Board[]>(STORAGE_KEY, []);
+      dispatch({ type: "LOAD", boards: saved });
       setInitialized(true);
+    }
+  }, [useFirestore]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist on every local change
+  useEffect(() => {
+    if (!initialized) return;
+
+    // Skip persisting if this was a remote Firestore update
+    if (isRemoteUpdate.current) {
+      isRemoteUpdate.current = false;
       return;
     }
+
     storageSet(STORAGE_KEY, boards);
-  }, [boards, initialized]);
+
+    if (useFirestore) {
+      writeDoc(FIRESTORE_DOC, boards);
+    }
+  }, [boards, initialized, useFirestore]);
 
   const getBoard = useCallback(
     (id: string) => boards.find((b) => b.id === id),

@@ -109,7 +109,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
                   <select
                     value={columnId}
                     onChange={(e) => setColumnId(e.target.value)}
-                    className="text-xs text-amber-600 bg-transparent border-none outline-none cursor-pointer font-medium"
+                    className="text-xs text-blue-600 bg-transparent border-none outline-none cursor-pointer font-medium"
                   >
                     {columns.map((col) => (
                       <option key={col.id} value={col.id}>

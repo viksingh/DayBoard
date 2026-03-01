@@ -33,7 +33,7 @@ export default function SyncIndicator() {
 
   const config: Record<SyncStatus, { color: string; label: string; icon: React.ReactNode }> = {
     connecting: {
-      color: "text-amber-500",
+      color: "text-blue-500",
       label: "Connecting...",
       icon: <Loader2 className="w-3.5 h-3.5 animate-spin" />,
     },

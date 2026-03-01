@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 :root {
-  --cream: #FFFDF7;
-  --accent: #D4A843;
-  --accent-light: #E8C96A;
-  --accent-dark: #B8902E;
-  --text-primary: #292524;
-  --text-secondary: #57534e;
-  --text-muted: #a8a29e;
-  --border: #e7e5e4;
-  --border-light: #f5f5f4;
+  --cream: #F8FAFC;
+  --accent: #4A7AB5;
+  --accent-light: #6B9BD2;
+  --accent-dark: #3A6190;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
   --card-bg: #ffffff;
-  --sidebar-bg: #fafaf9;
-  --hover-bg: #fffbeb;
+  --sidebar-bg: #f8fafc;
+  --hover-bg: #eff6ff;
 }
 
 body {
@@ -53,7 +53,7 @@ body {
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-3 py-1.5
            text-stone-600 font-medium rounded-lg
-           hover:bg-amber-50 hover:text-stone-800 transition-colors duration-150;
+           hover:bg-blue-50 hover:text-slate-800 transition-colors duration-150;
   }
 
   .input {

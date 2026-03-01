@@ -55,7 +55,7 @@ export default function ColumnComponent({
       <div
         className={cn(
           "bg-stone-50/80 rounded-2xl p-3 transition-colors",
-          isOver && "bg-amber-50/50 ring-2 ring-amber-200"
+          isOver && "bg-blue-50/50 ring-2 ring-blue-200"
         )}
       >
         {/* Column header */}

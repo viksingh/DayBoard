@@ -45,7 +45,7 @@ export const BOARD_COLORS = [
   { name: "Rose", color: "#ec4899", light: "#fdf2f8", gradient: "from-pink-400 to-rose-500" },
   { name: "Teal", color: "#14b8a6", light: "#f0fdfa", gradient: "from-teal-400 to-cyan-500" },
   { name: "Crimson", color: "#ef4444", light: "#fef2f2", gradient: "from-red-400 to-rose-500" },
-  { name: "Amber", color: "#D4A843", light: "#fffbeb", gradient: "from-amber-400 to-yellow-500" },
+  { name: "Steel", color: "#4A7AB5", light: "#eff6ff", gradient: "from-blue-400 to-blue-500" },
 ];
 
 export function getBoardColor(color: string) {

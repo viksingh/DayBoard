@@ -10,7 +10,7 @@ export default function SignInPage() {
         <div className="card p-8 text-center">
           {/* Logo */}
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-warm-lg">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-warm-lg">
               <Sun className="w-8 h-8 text-white" />
             </div>
           </div>

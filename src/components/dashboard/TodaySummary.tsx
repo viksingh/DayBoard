@@ -39,15 +39,15 @@ export default function TodaySummary() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-5 h-5 text-amber-500" />
+          <CalendarDays className="w-5 h-5 text-blue-500" />
           <h2 className="font-semibold text-stone-800">Today</h2>
         </div>
         <span className="text-sm text-stone-500">{formatDisplay(today, "EEEE, MMM d")}</span>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="text-center p-3 rounded-xl bg-amber-50/50">
-          <Clock className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+        <div className="text-center p-3 rounded-xl bg-blue-50/50">
+          <Clock className="w-4 h-4 text-blue-500 mx-auto mb-1" />
           <div className="text-2xl font-bold text-stone-800">{dueTodayCards.length}</div>
           <div className="text-xs text-stone-500">Due today</div>
         </div>
@@ -70,7 +70,7 @@ export default function TodaySummary() {
 
       <Link
         href={`/daily/${today}`}
-        className="flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+        className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
       >
         Open daily notes <ArrowRight className="w-4 h-4" />
       </Link>

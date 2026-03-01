@@ -47,7 +47,7 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-stone-200">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
           <Sun className="w-4 h-4 text-white" />
         </div>
         <AnimatePresence>
@@ -79,7 +79,7 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-amber-50 text-amber-700"
+                    ? "bg-blue-50 text-blue-700"
                     : "text-stone-600 hover:bg-stone-100 hover:text-stone-800"
                 )}
               >
@@ -127,7 +127,7 @@ export default function Sidebar() {
           <div className="space-y-1">
             {boards.map((board) => {
               const isActive = pathname === `/board/${board.id}`;
-              const boardColor = board.color || "#D4A843";
+              const boardColor = board.color || "#4A7AB5";
               return (
                 <Link
                   key={board.id}

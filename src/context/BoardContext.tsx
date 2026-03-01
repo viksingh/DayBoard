@@ -42,7 +42,7 @@ function boardReducer(state: Board[], action: Action): Board[] {
         color: boardColor,
         columns: [
           { id: generateId(), boardId, title: "To Do", position: 0, color: "#3b82f6" },
-          { id: generateId(), boardId, title: "In Progress", position: 1, color: "#f59e0b" },
+          { id: generateId(), boardId, title: "In Progress", position: 1, color: "#6B9BD2" },
           { id: generateId(), boardId, title: "Done", position: 2, color: "#22c55e" },
         ],
         cards: [],

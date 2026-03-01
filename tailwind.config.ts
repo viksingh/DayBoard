@@ -9,20 +9,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: "#FFFDF7",
+        cream: "#F8FAFC",
         accent: {
-          DEFAULT: "#D4A843",
-          light: "#E8C96A",
-          dark: "#B8902E",
+          DEFAULT: "#4A7AB5",
+          light: "#6B9BD2",
+          dark: "#3A6190",
         },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        warm: "0 2px 8px rgba(180, 140, 60, 0.08)",
-        "warm-lg": "0 8px 24px rgba(180, 140, 60, 0.12)",
-        "warm-xl": "0 12px 40px rgba(180, 140, 60, 0.16)",
+        warm: "0 2px 8px rgba(74, 122, 181, 0.08)",
+        "warm-lg": "0 8px 24px rgba(74, 122, 181, 0.12)",
+        "warm-xl": "0 12px 40px rgba(74, 122, 181, 0.16)",
       },
       borderRadius: {
         "2xl": "1rem",

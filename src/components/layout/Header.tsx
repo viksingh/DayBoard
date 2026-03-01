@@ -77,7 +77,7 @@ export default function Header() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">
                 {session.user.name?.[0]?.toUpperCase() || "?"}
               </div>
             )}

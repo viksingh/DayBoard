@@ -30,20 +30,20 @@ export default function DailyCalendarStrip({ currentDate }: DailyCalendarStripPr
               className={cn(
                 "flex flex-col items-center px-3 py-2 rounded-xl transition-all min-w-[48px]",
                 isActive
-                  ? "bg-amber-100 text-amber-800 shadow-warm"
+                  ? "bg-blue-100 text-blue-800 shadow-warm"
                   : isToday
-                  ? "bg-amber-50 text-amber-600"
+                  ? "bg-blue-50 text-blue-600"
                   : "hover:bg-stone-100 text-stone-600"
               )}
             >
               <span className="text-[10px] font-medium uppercase">
                 {format(d, "EEE")}
               </span>
-              <span className={cn("text-lg font-bold", isActive && "text-amber-700")}>
+              <span className={cn("text-lg font-bold", isActive && "text-blue-700")}>
                 {format(d, "d")}
               </span>
               {hasNote && (
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-0.5" />
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-0.5" />
               )}
             </motion.div>
           </Link>

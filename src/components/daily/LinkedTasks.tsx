@@ -39,7 +39,7 @@ export default function LinkedTasks({ date }: LinkedTasksProps) {
   return (
     <div className="card p-5">
       <div className="flex items-center gap-2 mb-3">
-        <LinkIcon className="w-4 h-4 text-amber-500" />
+        <LinkIcon className="w-4 h-4 text-blue-500" />
         <h3 className="text-sm font-semibold text-stone-700">Linked Tasks</h3>
         <span className="text-xs text-stone-400">({linkedCards.length})</span>
       </div>

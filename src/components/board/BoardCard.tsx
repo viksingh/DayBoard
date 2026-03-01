@@ -78,7 +78,7 @@ export default function BoardCard({ card, onClick, isDragOverlay }: BoardCardPro
                 className={cn(
                   "flex items-center gap-1",
                   isOverdue && "text-red-500",
-                  card.dueDate && isTodayKey(card.dueDate) && "text-amber-500"
+                  card.dueDate && isTodayKey(card.dueDate) && "text-blue-500"
                 )}
               >
                 <Calendar className="w-3 h-3" />

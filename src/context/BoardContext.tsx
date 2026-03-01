@@ -214,6 +214,12 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
           isRemoteUpdate.current = true;
           dispatch({ type: "LOAD", boards: data });
           storageSet(STORAGE_KEY, data); // cache locally
+        } else {
+          // Doc doesn't exist yet — push local data to seed Firestore
+          const local = storageGet<Board[]>(STORAGE_KEY, []);
+          if (local.length > 0) {
+            writeDoc(FIRESTORE_DOC, local);
+          }
         }
         if (!initialized) setInitialized(true);
       });

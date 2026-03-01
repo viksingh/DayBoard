@@ -100,6 +100,12 @@ export function DailyProvider({ children }: { children: React.ReactNode }) {
           isRemoteUpdate.current = true;
           dispatch({ type: "LOAD", notes: data });
           storageSet(STORAGE_KEY, data);
+        } else {
+          // Doc doesn't exist yet — push local data to seed Firestore
+          const local = storageGet<DailyMap>(STORAGE_KEY, {});
+          if (Object.keys(local).length > 0) {
+            writeDoc(FIRESTORE_DOC, local);
+          }
         }
         if (!initialized) setInitialized(true);
       });

@@ -7,6 +7,7 @@ import { ChevronRight, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useBoardContext } from "@/context/BoardContext";
 import { formatDisplay } from "@/lib/dates";
+import SyncIndicator from "@/components/shared/SyncIndicator";
 
 function useBreadcrumbs() {
   const pathname = usePathname() ?? "/";
@@ -57,6 +58,9 @@ export default function Header() {
         ))}
       </nav>
 
+      <div className="flex items-center gap-3">
+      <SyncIndicator />
+
       {/* User menu */}
       {session?.user && (
         <div className="relative">
@@ -102,6 +106,7 @@ export default function Header() {
           )}
         </div>
       )}
+      </div>
     </header>
   );
 }

@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { isValidDateKey } from "@/lib/dates";
 import DailyHeader from "@/components/daily/DailyHeader";
 import DailyEditor from "@/components/daily/DailyEditor";
+import DueTasks from "@/components/daily/DueTasks";
 import LinkedTasks from "@/components/daily/LinkedTasks";
 import EmptyState from "@/components/shared/EmptyState";
 import { CalendarDays } from "lucide-react";
@@ -29,6 +30,7 @@ export default function DailyDatePage() {
       <DailyHeader date={date} />
       <div className="space-y-4">
         <DailyEditor date={date} />
+        <DueTasks date={date} />
         <LinkedTasks date={date} />
       </div>
     </div>

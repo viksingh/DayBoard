@@ -1,10 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from "react";
-import { Board, Card, Column, BOARD_COLORS } from "@/types/board";
+import { Board, Card, Column, BOARD_COLORS, RecurrenceRule, CardTemplate } from "@/types/board";
 import { storageGet, storageSet } from "@/lib/storage";
 import { generateId } from "@/lib/ids";
-import { nowISO } from "@/lib/dates";
+import { nowISO, formatDateKey } from "@/lib/dates";
+import { addDays, addWeeks, addMonths } from "date-fns";
 import { subscribeToDoc, writeDoc, isFirestoreConfigured } from "@/lib/firestore-sync";
 
 const STORAGE_KEY = "boards";
@@ -21,8 +22,11 @@ type Action =
   | { type: "DELETE_COLUMN"; boardId: string; columnId: string }
   | { type: "MOVE_COLUMN"; boardId: string; columnId: string; newPosition: number }
   | { type: "ADD_CARD"; boardId: string; columnId: string; title: string; description?: string }
+  | { type: "ADD_CARD_FROM_TEMPLATE"; boardId: string; columnId: string; template: CardTemplate }
   | { type: "UPDATE_CARD"; boardId: string; cardId: string; updates: Partial<Omit<Card, "id" | "boardId" | "createdAt">> }
   | { type: "DELETE_CARD"; boardId: string; cardId: string }
+  | { type: "DELETE_CARDS"; boardId: string; cardIds: string[] }
+  | { type: "MOVE_CARDS"; boardId: string; cardIds: string[]; toColumnId: string }
   | { type: "MOVE_CARD"; boardId: string; cardId: string; toColumnId: string; newPosition: number };
 
 // --- Reducer ---
@@ -131,6 +135,36 @@ function boardReducer(state: Board[], action: Action): Board[] {
           dueDate: null,
           position: maxPos + 1,
           linkedDailyDate: null,
+          subtasks: [],
+          recurrence: null,
+          priority: null,
+          createdAt: now,
+          updatedAt: now,
+        };
+        return { ...b, cards: [...b.cards, newCard], updatedAt: now };
+      });
+    }
+
+    case "ADD_CARD_FROM_TEMPLATE": {
+      return state.map((b) => {
+        if (b.id !== action.boardId) return b;
+        const colCards = b.cards.filter((c) => c.columnId === action.columnId);
+        const maxPos = colCards.reduce((max, c) => Math.max(max, c.position), -1);
+        const now = nowISO();
+        const t = action.template;
+        const newCard: Card = {
+          id: generateId(),
+          columnId: action.columnId,
+          boardId: b.id,
+          title: t.title,
+          description: t.description,
+          labels: t.labels.map((l) => ({ ...l, id: generateId() })),
+          dueDate: null,
+          position: maxPos + 1,
+          linkedDailyDate: null,
+          subtasks: t.subtasks.map((s) => ({ id: generateId(), text: s.text, done: false })),
+          recurrence: null,
+          priority: t.priority,
           createdAt: now,
           updatedAt: now,
         };
@@ -156,6 +190,28 @@ function boardReducer(state: Board[], action: Action): Board[] {
         return { ...b, cards: b.cards.filter((c) => c.id !== action.cardId), updatedAt: nowISO() };
       });
 
+    case "DELETE_CARDS":
+      return state.map((b) => {
+        if (b.id !== action.boardId) return b;
+        const idsToDelete = new Set(action.cardIds);
+        return { ...b, cards: b.cards.filter((c) => !idsToDelete.has(c.id)), updatedAt: nowISO() };
+      });
+
+    case "MOVE_CARDS":
+      return state.map((b) => {
+        if (b.id !== action.boardId) return b;
+        const idsToMove = new Set(action.cardIds);
+        const existingInTarget = b.cards.filter((c) => c.columnId === action.toColumnId && !idsToMove.has(c.id));
+        let nextPos = existingInTarget.reduce((max, c) => Math.max(max, c.position), -1) + 1;
+        const updatedCards = b.cards.map((c) => {
+          if (idsToMove.has(c.id)) {
+            return { ...c, columnId: action.toColumnId, position: nextPos++, updatedAt: nowISO() };
+          }
+          return c;
+        });
+        return { ...b, cards: updatedCards, updatedAt: nowISO() };
+      });
+
     case "MOVE_CARD":
       return state.map((b) => {
         if (b.id !== action.boardId) return b;
@@ -173,9 +229,45 @@ function boardReducer(state: Board[], action: Action): Board[] {
         const updatedTargetCards = targetColCards.map((c, i) => ({ ...c, position: i }));
         const remainingCards = otherCards.filter((c) => c.columnId !== action.toColumnId);
 
+        let allCards = [...remainingCards, ...updatedTargetCards];
+
+        // Recurrence: when a recurring card lands in the last column, clone it to the first column
+        const sortedCols = [...b.columns].sort((a, c) => a.position - c.position);
+        const lastCol = sortedCols[sortedCols.length - 1];
+        const firstCol = sortedCols[0];
+        if (card.recurrence && lastCol && firstCol && action.toColumnId === lastCol.id) {
+          const rec = card.recurrence;
+          const base = rec.nextDue ? new Date(rec.nextDue) : new Date();
+          let nextDate: Date;
+          if (rec.frequency === "daily") nextDate = addDays(base, 1);
+          else if (rec.frequency === "weekly") nextDate = addWeeks(base, 1);
+          else nextDate = addMonths(base, 1);
+
+          const firstColCards = allCards.filter((c) => c.columnId === firstCol.id);
+          const maxPos = firstColCards.reduce((max, c) => Math.max(max, c.position), -1);
+          const now = nowISO();
+          const clone: Card = {
+            id: generateId(),
+            columnId: firstCol.id,
+            boardId: b.id,
+            title: card.title,
+            description: card.description,
+            labels: [...card.labels],
+            dueDate: formatDateKey(nextDate),
+            position: maxPos + 1,
+            linkedDailyDate: null,
+            subtasks: card.subtasks.map((s) => ({ ...s, done: false })),
+            recurrence: { ...rec, nextDue: formatDateKey(nextDate) } as RecurrenceRule,
+            priority: card.priority,
+            createdAt: now,
+            updatedAt: now,
+          };
+          allCards = [...allCards, clone];
+        }
+
         return {
           ...b,
-          cards: [...remainingCards, ...updatedTargetCards],
+          cards: allCards,
           updatedAt: nowISO(),
         };
       });

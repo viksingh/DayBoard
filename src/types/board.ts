@@ -4,6 +4,25 @@ export interface Label {
   color: string;
 }
 
+export interface Subtask {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface RecurrenceRule {
+  frequency: "daily" | "weekly" | "monthly";
+  nextDue: string;
+}
+
+export type Priority = "low" | "medium" | "high" | null;
+
+export const PRIORITY_CONFIG = {
+  low: { label: "Low", color: "#3b82f6", border: "border-l-blue-500" },
+  medium: { label: "Medium", color: "#f59e0b", border: "border-l-amber-500" },
+  high: { label: "High", color: "#ef4444", border: "border-l-red-500" },
+} as const;
+
 export interface Card {
   id: string;
   columnId: string;
@@ -14,8 +33,21 @@ export interface Card {
   dueDate: string | null;
   position: number;
   linkedDailyDate: string | null;
+  subtasks: Subtask[];
+  recurrence: RecurrenceRule | null;
+  priority: Priority;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CardTemplate {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  labels: Label[];
+  subtasks: { text: string }[];
+  priority: Priority;
 }
 
 export interface Column {

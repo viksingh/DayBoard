@@ -10,10 +10,17 @@ import {
   AlignLeft,
   Plus,
   Link as LinkIcon,
+  CheckSquare,
+  Repeat,
+  Square,
+  CheckSquare2,
+  Flag,
+  BookmarkPlus,
 } from "lucide-react";
-import { Card, Column, Label } from "@/types/board";
+import { Card, Column, Label, Subtask, RecurrenceRule, Priority, PRIORITY_CONFIG } from "@/types/board";
 import { useBoards } from "@/hooks/useBoards";
 import { useDailyNotes } from "@/hooks/useDailyNotes";
+import { useTemplates } from "@/hooks/useTemplates";
 import { formatDisplay, todayKey } from "@/lib/dates";
 import { generateId } from "@/lib/ids";
 import Badge from "@/components/shared/Badge";
@@ -30,16 +37,21 @@ interface CardModalProps {
 export default function CardModal({ card, boardId, columns, onClose }: CardModalProps) {
   const { updateCard, deleteCard } = useBoards();
   const { linkCard } = useDailyNotes();
+  const { addTemplate } = useTemplates();
 
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description);
   const [dueDate, setDueDate] = useState(card.dueDate || "");
   const [labels, setLabels] = useState<Label[]>(card.labels);
   const [columnId, setColumnId] = useState(card.columnId);
+  const [subtasks, setSubtasks] = useState<Subtask[]>(card.subtasks || []);
+  const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(card.recurrence || null);
+  const [priority, setPriority] = useState<Priority>(card.priority || null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showLabelForm, setShowLabelForm] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
   const [newLabelColor, setNewLabelColor] = useState("#3b82f6");
+  const [newSubtaskText, setNewSubtaskText] = useState("");
 
   // Save on changes
   useEffect(() => {
@@ -50,11 +62,14 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
         dueDate: dueDate || null,
         labels,
         columnId,
+        subtasks,
+        recurrence,
+        priority,
       });
     }, 300);
     return () => clearTimeout(timeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, description, dueDate, labels, columnId]);
+  }, [title, description, dueDate, labels, columnId, subtasks, recurrence, priority]);
 
   const handleAddLabel = () => {
     if (newLabelName.trim()) {
@@ -84,6 +99,34 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
     updateCard(boardId, card.id, { linkedDailyDate: today });
   };
 
+  const handleAddSubtask = () => {
+    if (newSubtaskText.trim()) {
+      setSubtasks([...subtasks, { id: generateId(), text: newSubtaskText.trim(), done: false }]);
+      setNewSubtaskText("");
+    }
+  };
+
+  const handleToggleSubtask = (id: string) => {
+    setSubtasks(subtasks.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
+  };
+
+  const handleDeleteSubtask = (id: string) => {
+    setSubtasks(subtasks.filter((s) => s.id !== id));
+  };
+
+  const handleRecurrenceChange = (frequency: string) => {
+    if (frequency === "none") {
+      setRecurrence(null);
+    } else {
+      setRecurrence({
+        frequency: frequency as RecurrenceRule["frequency"],
+        nextDue: dueDate || todayKey(),
+      });
+    }
+  };
+
+  const doneCount = subtasks.filter((s) => s.done).length;
+
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />
@@ -93,14 +136,14 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
         exit={{ opacity: 0, y: 20 }}
         className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 pointer-events-none"
       >
-        <div className="bg-white rounded-2xl shadow-warm-xl w-full max-w-lg pointer-events-auto max-h-[80vh] overflow-y-auto">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-warm-xl w-full max-w-lg pointer-events-auto max-h-[80vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-start justify-between p-5 pb-0">
             <div className="flex-1 mr-4">
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="text-lg font-bold text-stone-800 w-full bg-transparent border-none outline-none focus:ring-0 p-0"
+                className="text-lg font-bold text-stone-800 dark:text-stone-100 w-full bg-transparent border-none outline-none focus:ring-0 p-0"
                 placeholder="Card title"
               />
               <div className="flex items-center gap-2 mt-1 text-xs text-stone-400">
@@ -109,7 +152,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
                   <select
                     value={columnId}
                     onChange={(e) => setColumnId(e.target.value)}
-                    className="text-xs text-blue-600 bg-transparent border-none outline-none cursor-pointer font-medium"
+                    className="text-xs text-blue-600 dark:text-blue-400 bg-transparent border-none outline-none cursor-pointer font-medium"
                   >
                     {columns.map((col) => (
                       <option key={col.id} value={col.id}>
@@ -128,7 +171,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-stone-100 text-stone-400 transition-colors"
+              className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -139,7 +182,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Tag className="w-4 h-4 text-stone-400" />
-                <span className="text-sm font-medium text-stone-600">Labels</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Labels</span>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {labels.map((label) => (
@@ -159,7 +202,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
                 ))}
                 <button
                   onClick={() => setShowLabelForm(!showLabelForm)}
-                  className="label-chip bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors"
+                  className="label-chip bg-stone-100 dark:bg-slate-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-slate-600 transition-colors"
                 >
                   <Plus className="w-3 h-3 inline" /> Add
                 </button>
@@ -171,7 +214,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-stone-50 rounded-xl p-3 space-y-2"
+                    className="bg-stone-50 dark:bg-slate-700 rounded-xl p-3 space-y-2"
                   >
                     <input
                       value={newLabelName}
@@ -195,7 +238,7 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-stone-400" />
-                <span className="text-sm font-medium text-stone-600">Due Date</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Due Date</span>
               </div>
               <input
                 type="date"
@@ -205,11 +248,131 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
               />
             </div>
 
+            {/* Recurrence */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Repeat className="w-4 h-4 text-stone-400" />
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Recurrence</span>
+              </div>
+              <select
+                value={recurrence?.frequency || "none"}
+                onChange={(e) => handleRecurrenceChange(e.target.value)}
+                className="input text-sm"
+              >
+                <option value="none">None</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Flag className="w-4 h-4 text-stone-400" />
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Priority</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {(["low", "medium", "high"] as const).map((p) => {
+                  const cfg = PRIORITY_CONFIG[p];
+                  const isActive = priority === p;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPriority(isActive ? null : p)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all"
+                      style={isActive ? {
+                        backgroundColor: cfg.color + "18",
+                        borderColor: cfg.color,
+                        color: cfg.color,
+                      } : {
+                        borderColor: "transparent",
+                        backgroundColor: "var(--priority-bg, #f5f5f4)",
+                        color: "#78716c",
+                      }}
+                    >
+                      <Flag className="w-3 h-3" />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Subtasks / Checklist */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <CheckSquare className="w-4 h-4 text-stone-400" />
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Subtasks</span>
+                {subtasks.length > 0 && (
+                  <span className="text-xs text-stone-400">
+                    {doneCount}/{subtasks.length}
+                  </span>
+                )}
+              </div>
+
+              {subtasks.length > 0 && (
+                <div className="w-full bg-stone-200 dark:bg-slate-600 rounded-full h-1.5 mb-3">
+                  <div
+                    className="bg-green-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${subtasks.length > 0 ? (doneCount / subtasks.length) * 100 : 0}%` }}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5 mb-2">
+                {subtasks.map((st) => (
+                  <div key={st.id} className="flex items-center gap-2 group">
+                    <button onClick={() => handleToggleSubtask(st.id)} className="flex-shrink-0">
+                      {st.done ? (
+                        <CheckSquare2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Square className="w-4 h-4 text-stone-300 dark:text-stone-500" />
+                      )}
+                    </button>
+                    <span
+                      className={`text-sm flex-1 ${
+                        st.done
+                          ? "line-through text-stone-400 dark:text-stone-500"
+                          : "text-stone-700 dark:text-stone-200"
+                      }`}
+                    >
+                      {st.text}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteSubtask(st.id)}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-stone-100 dark:hover:bg-slate-600 text-stone-400 transition-all"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  value={newSubtaskText}
+                  onChange={(e) => setNewSubtaskText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddSubtask();
+                  }}
+                  placeholder="Add a subtask..."
+                  className="input text-sm py-1.5"
+                />
+                <button
+                  onClick={handleAddSubtask}
+                  className="btn-ghost text-xs flex-shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
             {/* Description */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <AlignLeft className="w-4 h-4 text-stone-400" />
-                <span className="text-sm font-medium text-stone-600">Description</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Description</span>
               </div>
               <textarea
                 value={description}
@@ -221,13 +384,33 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-              <button onClick={handleLinkToToday} className="btn-ghost text-xs">
-                <LinkIcon className="w-3.5 h-3.5" /> Link to today
-              </button>
+            <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-slate-700">
+              <div className="flex items-center gap-2">
+                <button onClick={handleLinkToToday} className="btn-ghost text-xs">
+                  <LinkIcon className="w-3.5 h-3.5" /> Link to today
+                </button>
+                <button
+                  onClick={() => {
+                    const name = prompt("Template name:");
+                    if (name?.trim()) {
+                      addTemplate({
+                        name: name.trim(),
+                        title,
+                        description,
+                        labels,
+                        subtasks: subtasks.map((s) => ({ text: s.text })),
+                        priority,
+                      });
+                    }
+                  }}
+                  className="btn-ghost text-xs"
+                >
+                  <BookmarkPlus className="w-3.5 h-3.5" /> Save as template
+                </button>
+              </div>
               <button
                 onClick={() => setShowConfirm(true)}
-                className="btn-ghost text-xs text-red-500 hover:bg-red-50 hover:text-red-600"
+                className="btn-ghost text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete card
               </button>

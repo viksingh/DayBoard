@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, X, Kanban, FileText, CalendarDays } from "lucide-react";
+import { Search, X, Kanban, FileText, CalendarDays, Plus } from "lucide-react";
 import { useBoards } from "@/hooks/useBoards";
 import { useDailyNotes } from "@/hooks/useDailyNotes";
 import { useRouter } from "next/navigation";
 import { formatDisplay } from "@/lib/dates";
 
 interface SearchResult {
-  type: "board" | "card" | "daily";
+  type: "board" | "card" | "daily" | "create";
   title: string;
   subtitle: string;
   href: string;
@@ -23,8 +23,11 @@ interface SearchModalProps {
 export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [quickAddMode, setQuickAddMode] = useState(false);
+  const [selectedBoardId, setSelectedBoardId] = useState("");
+  const [selectedColumnId, setSelectedColumnId] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { boards } = useBoards();
+  const { boards, addCard } = useBoards();
   const { allNotes } = useDailyNotes();
   const router = useRouter();
 
@@ -32,9 +35,35 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (open) {
       setQuery("");
       setSelectedIndex(0);
+      setQuickAddMode(false);
+      setSelectedBoardId("");
+      setSelectedColumnId("");
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
+
+  // Auto-select first board/column when entering quick-add mode
+  useEffect(() => {
+    if (quickAddMode && !selectedBoardId && boards.length > 0) {
+      setSelectedBoardId(boards[0].id);
+      const cols = boards[0].columns;
+      if (cols.length > 0) {
+        const sorted = [...cols].sort((a, b) => a.position - b.position);
+        setSelectedColumnId(sorted[0].id);
+      }
+    }
+  }, [quickAddMode, selectedBoardId, boards]);
+
+  // Update column when board changes
+  useEffect(() => {
+    if (selectedBoardId) {
+      const board = boards.find((b) => b.id === selectedBoardId);
+      if (board && board.columns.length > 0) {
+        const sorted = [...board.columns].sort((a, b) => a.position - b.position);
+        setSelectedColumnId(sorted[0].id);
+      }
+    }
+  }, [selectedBoardId, boards]);
 
   const results: SearchResult[] = (() => {
     const q = query.toLowerCase().trim();
@@ -74,6 +103,14 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       }
     }
 
+    // Add "Create task" option at the end
+    items.push({
+      type: "create",
+      title: `Create task "${query.trim()}"`,
+      subtitle: "Add a new card to a board",
+      href: "",
+    });
+
     return items.slice(0, 12);
   })();
 
@@ -89,7 +126,29 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     [router, onClose]
   );
 
+  const handleSelect = (result: SearchResult) => {
+    if (result.type === "create") {
+      setQuickAddMode(true);
+    } else {
+      navigate(result.href);
+    }
+  };
+
+  const handleCreate = () => {
+    if (!selectedBoardId || !selectedColumnId || !query.trim()) return;
+    addCard(selectedBoardId, selectedColumnId, query.trim());
+    onClose();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (quickAddMode) {
+      if (e.key === "Enter") {
+        handleCreate();
+      } else if (e.key === "Escape") {
+        setQuickAddMode(false);
+      }
+      return;
+    }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((i) => Math.min(i + 1, results.length - 1));
@@ -97,17 +156,23 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       e.preventDefault();
       setSelectedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && results[selectedIndex]) {
-      navigate(results[selectedIndex].href);
+      handleSelect(results[selectedIndex]);
     } else if (e.key === "Escape") {
       onClose();
     }
   };
 
-  const iconMap = {
+  const iconMap: Record<string, typeof Kanban> = {
     board: Kanban,
     card: FileText,
     daily: CalendarDays,
+    create: Plus,
   };
+
+  const selectedBoard = boards.find((b) => b.id === selectedBoardId);
+  const selectedBoardColumns = selectedBoard
+    ? [...selectedBoard.columns].sort((a, b) => a.position - b.position)
+    : [];
 
   if (!open) return null;
 
@@ -126,7 +191,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             <input
               ref={inputRef}
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => { setQuery(e.target.value); setQuickAddMode(false); }}
               onKeyDown={handleKeyDown}
               placeholder="Search boards, cards, daily notes..."
               className="flex-1 bg-transparent border-none outline-none text-stone-800 dark:text-stone-200 placeholder:text-stone-400 text-sm"
@@ -136,7 +201,47 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             </button>
           </div>
 
-          {query && (
+          {quickAddMode ? (
+            <div className="p-4 space-y-3">
+              <p className="text-sm font-medium text-stone-700 dark:text-stone-200">
+                Create task: <span className="text-blue-600 dark:text-blue-400">&quot;{query.trim()}&quot;</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <label className="text-xs text-stone-500 dark:text-stone-400 mb-1 block">Board</label>
+                  <select
+                    value={selectedBoardId}
+                    onChange={(e) => setSelectedBoardId(e.target.value)}
+                    className="input text-sm py-1.5 w-full"
+                  >
+                    {boards.map((b) => (
+                      <option key={b.id} value={b.id}>{b.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-stone-500 dark:text-stone-400 mb-1 block">Column</label>
+                  <select
+                    value={selectedColumnId}
+                    onChange={(e) => setSelectedColumnId(e.target.value)}
+                    className="input text-sm py-1.5 w-full"
+                  >
+                    {selectedBoardColumns.map((c) => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <button onClick={() => setQuickAddMode(false)} className="btn-ghost text-xs">
+                  Back
+                </button>
+                <button onClick={handleCreate} className="btn-primary text-xs">
+                  <Plus className="w-3.5 h-3.5" /> Create
+                </button>
+              </div>
+            </div>
+          ) : query ? (
             <div className="max-h-80 overflow-y-auto py-2">
               {results.length === 0 ? (
                 <p className="text-sm text-stone-400 text-center py-8">No results found</p>
@@ -146,31 +251,43 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   return (
                     <button
                       key={`${result.type}-${result.href}-${i}`}
-                      onClick={() => navigate(result.href)}
+                      onClick={() => handleSelect(result)}
                       className={`flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors ${
                         i === selectedIndex
                           ? "bg-blue-50 dark:bg-blue-900/30"
                           : "hover:bg-stone-50 dark:hover:bg-stone-700/50"
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-700 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        result.type === "create"
+                          ? "bg-blue-100 dark:bg-blue-900/40"
+                          : "bg-stone-100 dark:bg-stone-700"
+                      }`}>
+                        <Icon className={`w-4 h-4 ${
+                          result.type === "create"
+                            ? "text-blue-500"
+                            : "text-stone-500 dark:text-stone-400"
+                        }`} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
+                        <p className={`text-sm font-medium truncate ${
+                          result.type === "create"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-stone-800 dark:text-stone-200"
+                        }`}>
                           {result.title}
                         </p>
                         <p className="text-xs text-stone-400 truncate">{result.subtitle}</p>
                       </div>
-                      <span className="text-[10px] text-stone-400 capitalize">{result.type}</span>
+                      {result.type !== "create" && (
+                        <span className="text-[10px] text-stone-400 capitalize">{result.type}</span>
+                      )}
                     </button>
                   );
                 })
               )}
             </div>
-          )}
-
-          {!query && (
+          ) : (
             <div className="py-8 text-center">
               <p className="text-sm text-stone-400">Type to search across everything</p>
             </div>

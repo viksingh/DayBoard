@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useBoardContext } from "@/context/BoardContext";
-import { Card } from "@/types/board";
+import { Card, CardTemplate } from "@/types/board";
 
 export function useBoards() {
   const { boards, dispatch, getBoard } = useBoardContext();
@@ -77,6 +77,13 @@ export function useBoards() {
     [dispatch]
   );
 
+  const addCardFromTemplate = useCallback(
+    (boardId: string, columnId: string, template: CardTemplate) => {
+      dispatch({ type: "ADD_CARD_FROM_TEMPLATE", boardId, columnId, template });
+    },
+    [dispatch]
+  );
+
   return {
     boards,
     getBoard,
@@ -90,5 +97,6 @@ export function useBoards() {
     updateCard,
     deleteCard,
     moveCard,
+    addCardFromTemplate,
   };
 }

@@ -7,6 +7,7 @@ import { generateId } from "@/lib/ids";
 import { nowISO, formatDateKey } from "@/lib/dates";
 import { addDays, addWeeks, addMonths } from "date-fns";
 import { subscribeToDoc, writeDoc, isFirestoreConfigured } from "@/lib/firestore-sync";
+import { createSeedBoards } from "@/lib/seed-boards";
 
 const STORAGE_KEY = "boards";
 const FIRESTORE_DOC = "boards";
@@ -323,7 +324,13 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
       };
     } else {
       const saved = storageGet<Board[]>(STORAGE_KEY, []);
-      dispatch({ type: "LOAD", boards: saved });
+      if (saved.length > 0) {
+        dispatch({ type: "LOAD", boards: saved });
+      } else {
+        // Seed with Exercise & Meal Plan boards on first launch
+        const seed = createSeedBoards();
+        dispatch({ type: "LOAD", boards: seed });
+      }
       setInitialized(true);
     }
   }, [useFirestore]); // eslint-disable-line react-hooks/exhaustive-deps

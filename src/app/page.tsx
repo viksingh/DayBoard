@@ -24,8 +24,8 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-800">Welcome back</h1>
-          <p className="text-sm text-stone-500 mt-1">Here&apos;s what&apos;s happening across your boards</p>
+          <h1 className="text-2xl font-bold text-stone-800 dark:text-stone-100">Welcome back</h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">Here&apos;s what&apos;s happening across your boards</p>
         </div>
         <QuickActions onExport={handleExport} onImport={handleImport} />
       </div>

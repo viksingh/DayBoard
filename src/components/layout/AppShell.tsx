@@ -7,15 +7,17 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import { BoardProvider } from "@/context/BoardContext";
 import { DailyProvider } from "@/context/DailyContext";
 import { SettingsProvider } from "@/context/SettingsContext";
+import DarkModeInitializer from "@/components/shared/DarkModeInitializer";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <AuthGuard>
         <SettingsProvider>
+          <DarkModeInitializer />
           <BoardProvider>
             <DailyProvider>
-              <div className="flex h-screen overflow-hidden bg-cream">
+              <div className="flex h-screen overflow-hidden bg-cream dark:bg-slate-900">
                 <Sidebar />
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <Header />

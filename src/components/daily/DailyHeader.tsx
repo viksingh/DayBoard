@@ -24,19 +24,19 @@ export default function DailyHeader({ date }: DailyHeaderProps) {
         <div className="flex items-center gap-3">
           <Link
             href={`/daily/${prevDate}`}
-            className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 transition-colors"
+            className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-stone-800">
+            <h1 className="text-xl font-bold text-stone-800 dark:text-stone-100">
               {isToday ? "Today" : formatDisplay(date, "EEEE")}
             </h1>
-            <p className="text-sm text-stone-500">{formatDisplay(date, "MMMM d, yyyy")}</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400">{formatDisplay(date, "MMMM d, yyyy")}</p>
           </div>
           <Link
             href={`/daily/${nextDate}`}
-            className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 transition-colors"
+            className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400 transition-colors"
           >
             <ChevronRight className="w-5 h-5" />
           </Link>

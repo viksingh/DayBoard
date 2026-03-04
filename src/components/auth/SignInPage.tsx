@@ -5,7 +5,7 @@ import { Sun } from "lucide-react";
 
 export default function SignInPage() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-cream">
+    <div className="flex items-center justify-center min-h-screen bg-cream dark:bg-slate-900">
       <div className="w-full max-w-sm mx-4">
         <div className="card p-8 text-center">
           {/* Logo */}
@@ -15,15 +15,15 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-stone-800 mb-1">DayBoard</h1>
-          <p className="text-sm text-stone-500 mb-8">
+          <h1 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">DayBoard</h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-8">
             Your warm corner for tasks & daily notes
           </p>
 
           {/* Google Sign In */}
           <button
             onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm font-medium text-stone-700 hover:bg-stone-50 hover:shadow-warm transition-all duration-150"
+            className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white dark:bg-slate-700 border border-stone-200 dark:border-slate-600 rounded-xl text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-slate-600 hover:shadow-warm transition-all duration-150"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -46,7 +46,7 @@ export default function SignInPage() {
             Continue with Google
           </button>
 
-          <p className="text-xs text-stone-400 mt-6">
+          <p className="text-xs text-stone-400 dark:text-stone-500 mt-6">
             Your data stays in your browser&apos;s local storage
           </p>
         </div>

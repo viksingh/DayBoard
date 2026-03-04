@@ -24,15 +24,15 @@ export default function ConfirmDialog({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-2xl shadow-warm-xl p-6 max-w-sm w-full mx-4"
+        className="bg-white dark:bg-slate-800 rounded-2xl shadow-warm-xl p-6 max-w-sm w-full mx-4"
       >
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
-          <h3 className="text-lg font-semibold text-stone-800">{title}</h3>
+          <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100">{title}</h3>
         </div>
-        <p className="text-sm text-stone-600 mb-5">{message}</p>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-5">{message}</p>
         <div className="flex justify-end gap-2">
           <button onClick={onCancel} className="btn-secondary text-sm">
             Cancel

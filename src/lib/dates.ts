@@ -1,4 +1,4 @@
-import { format, parseISO, isToday, isValid, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
+import { format, parseISO, isToday, isValid, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 
 export function todayKey(): string {
   return format(new Date(), "yyyy-MM-dd");
@@ -41,4 +41,12 @@ export function getWeekDays(dateStr: string): string[] {
 
 export function nowISO(): string {
   return new Date().toISOString();
+}
+
+export function getCalendarDays(month: Date): Date[] {
+  const monthStart = startOfMonth(month);
+  const monthEnd = endOfMonth(month);
+  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  return eachDayOfInterval({ start: calStart, end: calEnd });
 }

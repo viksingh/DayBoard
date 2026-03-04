@@ -21,8 +21,8 @@ export default function MoodPicker({ value, onChange }: MoodPickerProps) {
           className={cn(
             "w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all",
             value === option.value
-              ? "bg-blue-100 ring-2 ring-blue-300 shadow-warm"
-              : "bg-stone-50 hover:bg-stone-100"
+              ? "bg-blue-100 dark:bg-blue-900/40 ring-2 ring-blue-300 dark:ring-blue-600 shadow-warm"
+              : "bg-stone-50 dark:bg-slate-700 hover:bg-stone-100 dark:hover:bg-slate-600"
           )}
           title={option.label}
         >

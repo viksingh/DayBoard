@@ -33,7 +33,7 @@ export default function AddColumnForm({ onAdd }: AddColumnFormProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white rounded-2xl p-3 shadow-warm border border-stone-100"
+            className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-warm border border-stone-100 dark:border-slate-700"
           >
             <input
               ref={inputRef}
@@ -58,7 +58,7 @@ export default function AddColumnForm({ onAdd }: AddColumnFormProps) {
                   setOpen(false);
                   setTitle("");
                 }}
-                className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400"
+                className="p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -67,7 +67,7 @@ export default function AddColumnForm({ onAdd }: AddColumnFormProps) {
         ) : (
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium text-stone-500 bg-stone-50 hover:bg-stone-100 rounded-2xl border-2 border-dashed border-stone-200 transition-colors"
+            className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-slate-800 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-2xl border-2 border-dashed border-stone-200 dark:border-slate-600 transition-colors"
           >
             <Plus className="w-4 h-4" /> Add column
           </button>

@@ -61,7 +61,7 @@ export default function AddCardForm({ onAdd }: AddCardFormProps) {
                   setOpen(false);
                   setTitle("");
                 }}
-                className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400"
+                className="p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -70,7 +70,7 @@ export default function AddCardForm({ onAdd }: AddCardFormProps) {
         ) : (
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-1.5 w-full px-3 py-2 text-sm text-stone-500 hover:bg-stone-100 rounded-xl transition-colors"
+            className="flex items-center gap-1.5 w-full px-3 py-2 text-sm text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" /> Add a card
           </button>

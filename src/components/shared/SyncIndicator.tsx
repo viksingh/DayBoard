@@ -67,7 +67,7 @@ export default function SyncIndicator() {
         <span className="hidden sm:inline">{status === "connected" ? "Synced" : status === "error" ? "Error" : "..."}</span>
       </div>
       {showTooltip && (
-        <div className="absolute right-0 top-6 z-50 bg-stone-800 text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap shadow-lg">
+        <div className="absolute right-0 top-6 z-50 bg-stone-800 dark:bg-slate-700 text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap shadow-lg">
           {c.label}
         </div>
       )}

@@ -19,6 +19,7 @@ export default function BoardPreviewCard({ board, onDelete }: BoardPreviewCardPr
     (c) => c.title.toLowerCase() === "done" || c.title.toLowerCase() === "completed"
   );
   const doneCards = doneCol ? board.cards.filter((c) => c.columnId === doneCol.id).length : 0;
+  const progress = totalCards > 0 ? Math.round((doneCards / totalCards) * 100) : 0;
   const bc = getBoardColor(board.color);
 
   return (
@@ -41,11 +42,11 @@ export default function BoardPreviewCard({ board, onDelete }: BoardPreviewCardPr
                 <Kanban className="w-4 h-4" style={{ color: bc.color }} />
               </div>
               <div>
-                <h3 className="font-semibold text-stone-800 hover:text-stone-600 transition-colors">
+                <h3 className="font-semibold text-stone-800 dark:text-stone-100 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
                   {board.title}
                 </h3>
                 {board.description && (
-                  <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{board.description}</p>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-1">{board.description}</p>
                 )}
               </div>
             </div>
@@ -53,20 +54,20 @@ export default function BoardPreviewCard({ board, onDelete }: BoardPreviewCardPr
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-stone-100 text-stone-400 transition-all"
+              className="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-400 transition-all"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-warm-lg border border-stone-200 py-1 min-w-[140px]">
+                <div className="absolute right-0 top-8 z-20 bg-white dark:bg-slate-800 rounded-xl shadow-warm-lg border border-stone-200 dark:border-slate-700 py-1 min-w-[140px]">
                   <button
                     onClick={() => {
                       onDelete(board.id);
                       setShowMenu(false);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
@@ -76,6 +77,22 @@ export default function BoardPreviewCard({ board, onDelete }: BoardPreviewCardPr
             )}
           </div>
         </div>
+
+        {/* Progress bar */}
+        {totalCards > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-stone-400">{progress}% complete</span>
+              <span className="text-[10px] text-stone-400">{doneCards}/{totalCards}</span>
+            </div>
+            <div className="w-full bg-stone-200 dark:bg-slate-600 rounded-full h-1.5">
+              <div
+                className="h-1.5 rounded-full transition-all"
+                style={{ width: `${progress}%`, backgroundColor: bc.color }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Column previews */}
         <Link href={`/board/${board.id}`}>

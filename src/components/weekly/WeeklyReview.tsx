@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, BarChart3, Target, CheckCircle2, TrendingUp } from "lucide-react";
-import { startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, format, isSameWeek, parseISO } from "date-fns";
+import { startOfWeek, endOfWeek, addWeeks, eachDayOfInterval, format, isSameWeek } from "date-fns";
 import { useBoards } from "@/hooks/useBoards";
 import { formatDateKey } from "@/lib/dates";
 import { isDoneColumn } from "@/lib/board-helpers";

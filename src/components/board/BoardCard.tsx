@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Calendar, AlignLeft, Repeat, Flag } from "lucide-react";
+import { GripVertical, Calendar, AlignLeft, Repeat, Flag, Paperclip } from "lucide-react";
 import { Card, PRIORITY_CONFIG } from "@/types/board";
 import { formatDisplay, isTodayKey } from "@/lib/dates";
 import Badge from "@/components/shared/Badge";
@@ -102,6 +102,12 @@ export default function BoardCard({ card, onClick, isDragOverlay }: BoardCardPro
             {card.priority && (
               <span className="flex items-center gap-1" style={{ color: PRIORITY_CONFIG[card.priority].color }}>
                 <Flag className="w-3 h-3" />
+              </span>
+            )}
+            {card.attachments?.length > 0 && (
+              <span className="flex items-center gap-1">
+                <Paperclip className="w-3 h-3" />
+                {card.attachments.length}
               </span>
             )}
             {card.recurrence && (

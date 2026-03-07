@@ -23,6 +23,16 @@ export const PRIORITY_CONFIG = {
   high: { label: "High", color: "#ef4444", border: "border-l-red-500" },
 } as const;
 
+export interface CardAttachment {
+  id: string;
+  cardId: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  createdAt: string;
+}
+
 export interface Card {
   id: string;
   columnId: string;
@@ -36,6 +46,7 @@ export interface Card {
   subtasks: Subtask[];
   recurrence: RecurrenceRule | null;
   priority: Priority;
+  attachments: CardAttachment[];
   createdAt: string;
   updatedAt: string;
 }

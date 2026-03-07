@@ -139,6 +139,7 @@ function boardReducer(state: Board[], action: Action): Board[] {
           subtasks: [],
           recurrence: null,
           priority: null,
+          attachments: [],
           createdAt: now,
           updatedAt: now,
         };
@@ -166,6 +167,7 @@ function boardReducer(state: Board[], action: Action): Board[] {
           subtasks: t.subtasks.map((s) => ({ id: generateId(), text: s.text, done: false })),
           recurrence: null,
           priority: t.priority,
+          attachments: [],
           createdAt: now,
           updatedAt: now,
         };
@@ -260,6 +262,7 @@ function boardReducer(state: Board[], action: Action): Board[] {
             subtasks: card.subtasks.map((s) => ({ ...s, done: false })),
             recurrence: { ...rec, nextDue: formatDateKey(nextDate) } as RecurrenceRule,
             priority: card.priority,
+            attachments: [],
             createdAt: now,
             updatedAt: now,
           };

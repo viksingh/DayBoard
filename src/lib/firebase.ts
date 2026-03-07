@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,3 +13,12 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
+
+export let storage: FirebaseStorage | null = null;
+if (firebaseConfig.storageBucket) {
+  storage = getStorage(app);
+}
+
+export function isStorageConfigured(): boolean {
+  return !!firebaseConfig.storageBucket && !!storage;
+}

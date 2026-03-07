@@ -29,6 +29,7 @@ function makeCard(
     subtasks: opts?.subtasks || [],
     recurrence: null,
     priority: opts?.priority || null,
+    attachments: [],
     createdAt: now,
     updatedAt: now,
   };

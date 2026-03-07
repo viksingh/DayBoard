@@ -16,8 +16,12 @@ import {
   CheckSquare2,
   Flag,
   BookmarkPlus,
+  Paperclip,
+  Download,
+  FileSpreadsheet,
+  File as FileIcon,
 } from "lucide-react";
-import { Card, Column, Label, Subtask, RecurrenceRule, Priority, PRIORITY_CONFIG } from "@/types/board";
+import { Card, CardAttachment, Column, Label, Subtask, RecurrenceRule, Priority, PRIORITY_CONFIG } from "@/types/board";
 import { useBoards } from "@/hooks/useBoards";
 import { useDailyNotes } from "@/hooks/useDailyNotes";
 import { useTemplates } from "@/hooks/useTemplates";
@@ -26,6 +30,7 @@ import { generateId } from "@/lib/ids";
 import Badge from "@/components/shared/Badge";
 import ColorPicker from "@/components/shared/ColorPicker";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { saveFile, handleDownload, removeFile, formatBytes } from "@/lib/file-storage";
 
 interface CardModalProps {
   card: Card;
@@ -47,6 +52,8 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
   const [subtasks, setSubtasks] = useState<Subtask[]>(card.subtasks || []);
   const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(card.recurrence || null);
   const [priority, setPriority] = useState<Priority>(card.priority || null);
+  const [attachments, setAttachments] = useState<CardAttachment[]>(card.attachments || []);
+  const [uploading, setUploading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showLabelForm, setShowLabelForm] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
@@ -65,11 +72,12 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
         subtasks,
         recurrence,
         priority,
+        attachments,
       });
     }, 300);
     return () => clearTimeout(timeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, description, dueDate, labels, columnId, subtasks, recurrence, priority]);
+  }, [title, description, dueDate, labels, columnId, subtasks, recurrence, priority, attachments]);
 
   const handleAddLabel = () => {
     if (newLabelName.trim()) {
@@ -112,6 +120,29 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
 
   const handleDeleteSubtask = (id: string) => {
     setSubtasks(subtasks.filter((s) => s.id !== id));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const id = generateId();
+        const meta = await saveFile(id, card.id, file);
+        setAttachments((prev) => [...prev, meta]);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteAttachment = async (attachment: CardAttachment) => {
+    await removeFile(attachment);
+    setAttachments((prev) => prev.filter((a) => a.id !== attachment.id));
   };
 
   const handleRecurrenceChange = (frequency: string) => {
@@ -381,6 +412,63 @@ export default function CardModal({ card, boardId, columns, onClose }: CardModal
                 className="textarea text-sm min-h-[100px]"
                 rows={4}
               />
+            </div>
+
+            {/* Attachments */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Paperclip className="w-4 h-4 text-stone-400" />
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Attachments</span>
+                {attachments.length > 0 && (
+                  <span className="text-xs text-stone-400">{attachments.length} file{attachments.length !== 1 ? "s" : ""}</span>
+                )}
+              </div>
+
+              {attachments.length > 0 && (
+                <div className="space-y-1.5 mb-2">
+                  {attachments.map((att) => {
+                    const isExcel = /\.(xlsx?|csv)$/i.test(att.name);
+                    const Icon = isExcel ? FileSpreadsheet : FileIcon;
+                    return (
+                      <div key={att.id} className="flex items-center gap-2 group bg-stone-50 dark:bg-slate-700 rounded-lg px-3 py-2">
+                        <Icon className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                        <span className="text-sm text-stone-700 dark:text-stone-200 flex-1 truncate">{att.name}</span>
+                        <span className="text-xs text-stone-400 flex-shrink-0">{formatBytes(att.size)}</span>
+                        <button
+                          onClick={() => handleDownload(att)}
+                          className="p-1 rounded hover:bg-stone-200 dark:hover:bg-slate-600 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors"
+                          title="Download"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAttachment(att)}
+                          className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-stone-400 hover:text-red-500 transition-colors"
+                          title="Remove"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                uploading
+                  ? "bg-stone-200 dark:bg-slate-600 text-stone-400 pointer-events-none"
+                  : "bg-stone-100 dark:bg-slate-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-slate-600"
+              }`}>
+                <Plus className="w-3 h-3" />
+                {uploading ? "Uploading..." : "Add file"}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  multiple
+                  disabled={uploading}
+                />
+              </label>
             </div>
 
             {/* Actions */}
